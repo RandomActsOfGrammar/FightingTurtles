@@ -5,4 +5,4 @@ Python turtle graphics game where a turtle shoots and chases down another turtle
 
 This game is designed for Python 3.  Backwards compatibility is not guaranteed, but may be possible.
 
-Currently, the sound only works on Windows.  
+The sound has now been updated to use Pygame, and so it can be played on platforms other than Windows. 
