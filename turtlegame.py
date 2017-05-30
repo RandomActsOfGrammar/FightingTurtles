@@ -3,11 +3,37 @@
 import turtle
 import random
 import time
-import winsound
+import pygame
+
+SHOT_FIRED_FILE = 'sounds/peeeooop_x.wav'
+ENEMY_HIT_FILE = 'sounds/scream_male.wav'
+NUKE_FILE = 'sounds/explosion_x.wav'
+HIT_FILE = 'sounds/hit_with_frying_pan_y.wav'
+YAY_FILE = 'sounds/yay_z.wav'
+
+def initializeSound():
+    pygame.mixer.pre_init(44100, -16, 2, 32)
+    pygame.mixer.init()
+    pygame.init()
+    global SHOT_FIRED
+    SHOT_FIRED = pygame.mixer.Sound(SHOT_FIRED_FILE)
+    global ENEMY_HIT
+    ENEMY_HIT = pygame.mixer.Sound(ENEMY_HIT_FILE)
+    global NUKE
+    NUKE = pygame.mixer.Sound(NUKE_FILE)
+    global HIT
+    HIT = pygame.mixer.Sound(HIT_FILE)
+    global YAY
+    YAY = pygame.mixer.Sound(YAY_FILE)
+
+def playSound(sound):
+    sound.play()
 
 #class for shots fired
 class Ammo:
     def __init__(self, x, y, heading, game, min_x, max_x, min_y, max_y, mute):
+        if not mute:
+            playSound(SHOT_FIRED)
         self.g = game
         self.t = turtle.Turtle()
         self.t.up()
@@ -24,9 +50,6 @@ class Ammo:
         self.done = False
         self.pause = False
         self.g.addAmmo(self)
-        if not mute:
-            winsound.PlaySound('sounds\peeeooop_x.wav',\
-                               winsound.SND_FILENAME|winsound.SND_ASYNC)
         self.move()
     #what to do in one movement timestep
     def move(self):
@@ -230,15 +253,13 @@ class Enemy:
     def hit(self):
         self.moveLen = self.moveLen * .9
         if not self.mute:
-            winsound.PlaySound('sounds\scream_male.wav', \
-                               winsound.SND_FILENAME|winsound.SND_ASYNC)
+            playSound(ENEMY_HIT)
         self.t.color('red')
         self.g.ontimer((lambda: self.t.color('orange')), 300)
     #slow enemy down a lot--it's a cheat
     def nuke(self):
         if not self.mute:
-            winsound.PlaySound('sounds\explosion_x.wav',\
-                               winsound.SND_FILENAME|winsound.SND_ASYNC)
+            playSound(NUKE)
         self.moveLen = self.moveLen * .5
         self.t.shape('circle')
         self.t.shapesize(2,2,1)
@@ -323,21 +344,22 @@ class Game:
         #bind keys for mute and pause
         self.screen.onkey(self.toggleMute, "m")
         self.screen.onkey(self.togglePause, "p")
+        initializeSound()
         #start window listening for events
         self.screen.listen()
         self.screen.mainloop()
     #play the awesome title across the screen
     def playTitle(self):
-        self.screen.register_shape('images\\fighting.gif')
-        self.screen.register_shape('images\\turtles.gif')
+        self.screen.register_shape('images/fighting.gif')
+        self.screen.register_shape('images/turtles.gif')
         ft = turtle.Turtle()
         ft.up()
         ft.speed(0)
-        ft.shape('images\\fighting.gif')
+        ft.shape('images/fighting.gif')
         tt = turtle.Turtle()
         tt.up()
         tt.speed(0)
-        tt.shape('images\\turtles.gif')
+        tt.shape('images/turtles.gif')
         ft.goto(self.min_x,100)
         tt.goto(self.max_x,-100)
         ft.speed(1)
@@ -552,15 +574,14 @@ class Game:
         self.character.finish()
         self.other.finish()
         if not self.mute:
-            winsound.PlaySound('sounds\hit_with_frying_pan_y.wav', winsound.SND_FILENAME)
-            winsound.PlaySound('sounds\yay_z.wav', \
-                               winsound.SND_FILENAME|winsound.SND_ASYNC)
+            playSound(HIT)
+            playSound(YAY)
         for i in self.liveAmmo:
             i.end()
         #display messages
         y = 0
         self.writeTurtle.goto(0,y)
-        self.writeTurtle.write('Got him!',align='center',font=('Arial',18,'bold'))
+        self.writeTurtle.write('Got Him!',align='center',font=('Arial',18,'bold'))
         y -= 20
         self.writeTurtle.goto(0,y)
         self.writeTurtle.write('Shots:  '+str(self.shotsFired), align='center',\
@@ -603,8 +624,9 @@ class Game:
 if __name__ == "__main__":
     import os
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    Game()
     try:
-        Game()
+        pass #Game()
     except:
         pass
 
