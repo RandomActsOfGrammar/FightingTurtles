@@ -37,10 +37,10 @@ class Ammo:
         self.g = game
         self.t = turtle.Turtle()
         self.t.up()
-        self.t.speed(0)
-        self.t.shape('circle')
         self.t.shapesize(.4,.4,.4)
         self.t.color('red')
+        self.t.shape('circle')
+        self.t.speed(0)
         self.t.goto(x,y)
         self.t.setheading(heading)
         self.min_x = min_x
@@ -51,6 +51,9 @@ class Ammo:
         self.pause = False
         self.g.addAmmo(self)
         self.move()
+    #return the turtle for this Ammo
+    def getTurtle(self):
+        return self.t
     #what to do in one movement timestep
     def move(self):
         if not self.done and not self.pause:
@@ -516,6 +519,8 @@ class Game:
     def removeAmmo(self, ammo):
         try:
             self.liveAmmo.remove(ammo)
+            index = self.screen.turtles().index(ammo.getTurtle())
+            del self.screen.turtles()[index]
         except:
             pass
     #mute/unmute game
@@ -623,10 +628,10 @@ class Game:
 
 if __name__ == "__main__":
     import os
+    import sys
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    Game()
     try:
-        pass #Game()
+        Game()
     except:
         pass
 
