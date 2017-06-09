@@ -4,6 +4,7 @@ import turtle
 import random
 import time
 import pygame
+import os
 
 SHOT_FIRED_FILE = 'sounds/peeeooop_x.wav'
 ENEMY_HIT_FILE = 'sounds/scream_male.wav'
@@ -289,6 +290,17 @@ class Enemy:
 #class to control whole game
 class Game:
     def __init__(self):
+        #move to its directory and initialize "best" scores
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        self.HIGH_SCORES_FILE = '.fightingTurtlesBestScores.txt'
+        self.bestTime = float('inf')
+        self.bestPercent = 0.0
+        if os.path.exists(self.HIGH_SCORES_FILE):
+            read = open(self.HIGH_SCORES_FILE, 'r')
+            scores = read.readlines()
+            self.bestTime = float(scores[0])
+            self.bestPercent = float(scores[1])
+            read.close()
         #make screeen for game
         self.screen = turtle.Screen()
         self.screen.setup(width=.95,height=.95,startx=0,starty=0)
@@ -583,6 +595,24 @@ class Game:
             playSound(YAY)
         for i in self.liveAmmo:
             i.end()
+        if self.shotsFired != 0:
+            percentage = int(self.hits/self.shotsFired*100)
+        else:
+            percentage = 100
+        #test for new bests
+        newBestTime = False
+        newBestPercent = False
+        if self.cheatsUsed == 0:
+            newBestTime = self.time < self.bestTime
+            newBestPercent = percentage > self.bestPercent
+            if newBestTime:
+                self.bestTime = self.time
+            if newBestPercent:
+                self.bestPercent = percentage
+            if newBestTime or newBestPercent:
+                writeFile = open(self.HIGH_SCORES_FILE,'w')
+                writeFile.write(str(self.bestTime) + '\n')
+                writeFile.write(str(self.bestPercent) + '\n')
         #display messages
         y = 0
         self.writeTurtle.goto(0,y)
@@ -597,16 +627,31 @@ class Game:
                                font=('Airal',14,'normal'))
         y -= 20
         self.writeTurtle.goto(0,y)
-        if self.shotsFired != 0:
-            percentage = int(self.hits/self.shotsFired*100)
-        else:
-            percentage = 100
         self.writeTurtle.write('Hit Percentage:  '+str(percentage),\
                                align='center', font=('Arial',14,'normal'))
         y -= 20
         self.writeTurtle.goto(0,y)
+        pencolor = self.writeTurtle.pencolor()
+        percentMessage = 'Best Percentage:  '
+        if newBestPercent:
+            percentMessage = 'NEW ' + percentMessage.upper()
+            self.writeTurtle.pencolor('red')
+        self.writeTurtle.write(percentMessage+str(self.bestPercent),\
+                               align='center', font=('Arial',14,'normal'))
+        self.writeTurtle.pencolor(pencolor)
+        y -= 20
+        self.writeTurtle.goto(0,y)
         self.writeTurtle.write('Time:  '+str(int(self.time)),\
                                align='center',font=('Arial',14,'normal'))
+        y -= 20
+        self.writeTurtle.goto(0,y)
+        timeMessage = 'Best Time:  '
+        if newBestTime:
+            timeMessage = 'NEW ' + timeMessage.upper()
+            self.writeTurtle.pencolor('red')
+        self.writeTurtle.write(timeMessage+str(int(self.bestTime)),\
+                               align='center',font=('Arial',14,'normal'))
+        self.writeTurtle.pencolor(pencolor)
         if self.cheatsUsed > 0:
             y -= 20
             self.writeTurtle.goto(0,y)
@@ -628,7 +673,7 @@ class Game:
 
 if __name__ == "__main__":
     import os
-    import sys
+    print(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     try:
         Game()
